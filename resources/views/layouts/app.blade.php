@@ -15,34 +15,37 @@
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans antialiased">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Simplemind" class="h-10 w-auto">
-                </a>
-            </div>
-            
-            <div class="hidden md:flex items-center gap-8 text-gray-600 font-medium">
-                <a href="/" class="hover:text-blue-600 transition-colors">Suporte Técnico</a>
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Simplemind" class="h-10 w-auto">
+            </a>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-8 text-gray-600 font-medium">
+            <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors">
+                Suporte Técnico
+            </a>
 
-                @auth
-                    <a href="{{ route('admin.index') }}" class="hover:text-blue-600 transition-colors">Painel Admin</a>
-                    
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all active:scale-95">
-                            Sair
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="hover:text-blue-600 transition-colors">Login</a>
-                    <a href="#" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md">
-                        Converse com especialista
-                    </a>
-                @endauth
-            </div>
-        </nav>
-    </header>
+            @auth
+                <a href="{{ route('admin.index') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
+                    Painel de Controle
+                </a>
+                
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all active:scale-95">
+                        Sair
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
+                    Painel de Controle
+                </a>
+            @endauth
+        </div>
+    </nav>
+</header>
 
     <main class="flex-grow container mx-auto px-6 py-10">
         @yield('content')
