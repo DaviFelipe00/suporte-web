@@ -10,14 +10,15 @@
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
-                <span class="text-xl font-bold text-gray-800">Suporte<span class="text-blue-600">Web</span></span>
+            <div class="flex items-center gap-3">
+                <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SuporteWeb" class="h-10 w-auto">
+                </a>
             </div>
             
             <div class="hidden md:flex items-center gap-8 text-gray-600 font-medium">
                 <a href="/" class="hover:text-blue-600 transition-colors">Início</a>
-                <a href="#" class="hover:text-blue-600 transition-colors">Solicitações</a>
+                <a href="{{ route('admin.index') }}" class="hover:text-blue-600 transition-colors">Solicitações</a>
                 <a href="#" class="hover:text-blue-600 transition-colors">Sobre</a>
                 <a href="#" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md">Falar com Consultor</a>
             </div>
@@ -52,6 +53,34 @@
             &copy; {{ date('Y') }} SuporteWeb. Todos os direitos reservados.
         </div>
     </footer>
+
+    <div class="fixed bottom-6 left-6 z-50">
+        <a href="https://wa.me/5581999999999?text=Olá,%20preciso%20de%20ajuda%20com%20o%20SuporteWeb" 
+            target="_blank" 
+            title="Falar no WhatsApp"
+            class="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.316 1.592 5.448 0 9.886-4.438 9.889-9.886.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884 0 2.225.569 3.846 1.594 5.46l-1.043 3.813 3.914-1.026z"/>
+            </svg>
+        </a>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50">
+        <button onclick="toggleChat()" title="Dúvidas Gerais com IA"
+            class="bg-gray-900 hover:bg-black text-white p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center border-2 border-gray-700 relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <span class="absolute -top-1 -right-1 bg-blue-500 text-[9px] px-1.5 py-0.5 rounded-full uppercase font-bold tracking-tighter shadow-sm">IA</span>
+        </button>
+    </div>
+
+    <script>
+        function toggleChat() {
+            // Placeholder para futura integração com API de IA
+            alert('Integrando o motor de IA... Em breve você poderá tirar dúvidas diretamente por aqui!');
+        }
+    </script>
 
 </body>
 </html>

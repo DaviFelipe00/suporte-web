@@ -4,40 +4,55 @@ namespace App\Http\Controllers;
 
 use App\Models\Solicitacao;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SolicitacaoController extends Controller
 {
-    public function store(Request $request)
-{
-    // 1. Validação corrigida para aceitar múltiplos arquivos
-    $dados = $request->validate([
-        'nome_solicitante'     => 'required|string|max:255',
-        'telefone_solicitante' => 'required',
-        'email_solicitante'    => 'required|email',
-        'motivo_contato'       => 'required',
-        'descricao_duvida'     => 'required',
-        'anexo.*'              => 'nullable|file|mimes:jpg,png,pdf|max:2048', // Valida cada item do array
-    ]);
+    /**
+     * Exibe a listagem de chamados para o painel administrativo.
+     */
+    public function index()
+    {
+        // Busca todos os chamados ordenados pelos mais recentes
+        $chamados = Solicitacao::latest()->get();
 
-    // 2. Processamento do Upload
-    if ($request->hasFile('anexo')) {
-        $arquivosSalvos = [];
-        
-        foreach ($request->file('anexo') as $arquivo) {
-            // Salva na pasta 'storage/app/public/evidencias'
-            $arquivosSalvos[] = $arquivo->store('evidencias', 'public');
-        }
-        
-        // Como o banco é uma string, salvamos o caminho do primeiro ou um JSON
-        // Opção: Salvar como JSON para suportar todos os arquivos enviados
-        $dados['arquivo_anexo'] = json_encode($arquivosSalvos); 
+        return view('admin.index', compact('chamados'));
     }
 
-    // 3. Salvar no Banco
-    unset($dados['anexo']); // Remove o campo do formulário que não existe na tabela
-    
-    \App\Models\Solicitacao::create($dados);
+    /**
+     * Processa o envio do formulário e salva os anexos.
+     */
+    public function store(Request $request)
+    {
+        // 1. Validação: anexo.* garante a validação de cada arquivo no array
+        $dados = $request->validate([
+            'nome_solicitante'     => 'required|string|max:255',
+            'telefone_solicitante' => 'required',
+            'email_solicitante'    => 'required|email',
+            'motivo_contato'       => 'required',
+            'descricao_duvida'     => 'required',
+            'anexo.*'              => 'nullable|file|mimes:jpg,png,pdf|max:2048', 
+        ]);
 
-    return back()->with('sucesso', 'Solicitação e anexo enviados com sucesso!');
-}
+        // 2. Processamento de múltiplos uploads
+        if ($request->hasFile('anexo')) {
+            $arquivosSalvos = [];
+            
+            foreach ($request->file('anexo') as $arquivo) {
+                // Armazena na pasta 'public/evidencias' e guarda o caminho
+                $arquivosSalvos[] = $arquivo->store('evidencias', 'public');
+            }
+            
+            // Convertemos o array de caminhos em JSON para salvar na coluna 'arquivo_anexo'
+            $dados['arquivo_anexo'] = json_encode($arquivosSalvos); 
+        }
+
+        // 3. Persistência no Banco de Dados
+        // Removemos 'anexo' pois ele veio do formulário, mas a coluna no banco é 'arquivo_anexo'
+        unset($dados['anexo']); 
+        
+        Solicitacao::create($dados);
+
+        return back()->with('sucesso', 'Solicitação e anexos enviados com sucesso!');
+    }
 }
