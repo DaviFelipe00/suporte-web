@@ -14,35 +14,42 @@
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans antialiased">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+<header class="bg-white shadow-sm sticky top-0 z-50">
     <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 transition-opacity hover:opacity-80">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo Simplemind" class="h-10 w-auto">
+                <span class="text-xl font-bold text-gray-800 hidden sm:block">Simple<span class="text-blue-600">mind</span></span>
             </a>
         </div>
         
         <div class="hidden md:flex items-center gap-8 text-gray-600 font-medium">
-            <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors">
-                Suporte Técnico
-            </a>
-
+            
             @auth
-                <a href="{{ route('admin.index') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
-                    Painel de Controle
+                <a href="{{ route('dashboard') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('dashboard') ? 'text-blue-600 font-bold' : '' }}">
+                    Dashboard
+                </a>
+
+                <a href="{{ route('admin.index') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('admin.index') ? 'text-blue-600 font-bold' : '' }}">
+                    Controle de Chamados
                 </a>
                 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all active:scale-95">
+                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all active:scale-95 ml-4">
                         Sair
                     </button>
                 </form>
             @else
+                <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('home') ? 'text-blue-600 font-bold' : '' }}">
+                    Suporte Técnico
+                </a>
+
                 <a href="{{ route('login') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
                     Painel de Controle
                 </a>
             @endauth
+
         </div>
     </nav>
 </header>
