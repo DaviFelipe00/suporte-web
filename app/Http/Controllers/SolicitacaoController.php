@@ -5,9 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Solicitacao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+
 
 class SolicitacaoController extends Controller
 {
+
+    public function dashboard()
+{
+    // Total Geral de Chamados
+    $totalChamados = Solicitacao::count();
+
+    // Chamados abertos HOJE
+    $chamadosHoje = Solicitacao::whereDate('created_at', Carbon::today())->count();
+
+    // Top motivos de contato (Agrupamento por motivo)
+    $estatisticasMotivo = Solicitacao::select('motivo_contato', \DB::raw('count(*) as total'))
+        ->groupBy('motivo_contato')
+        ->get();
+
+    return view('dashboard', compact('totalChamados', 'chamadosHoje', 'estatisticasMotivo'));
+}
     /**
      * Exibe a listagem de chamados para o painel administrativo.
      */

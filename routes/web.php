@@ -28,10 +28,10 @@ Route::post('/enviar', [SolicitacaoController::class, 'store'])->name('solicitac
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboard: Visão geral de métricas e status
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
+   Route::get('/dashboard', [SolicitacaoController::class, 'dashboard'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+    
     // Controle de Chamados: Listagem principal de solicitações
     Route::get('/admin', [SolicitacaoController::class, 'index'])->name('admin.index');
 
