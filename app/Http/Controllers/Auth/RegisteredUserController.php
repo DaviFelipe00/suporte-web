@@ -15,7 +15,7 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Exibe o formulário de cadastro (agora interno para administradores).
      */
     public function create(): View
     {
@@ -23,28 +23,36 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
+     * Processa a criação de um novo administrador.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validação rigorosa dos dados recebidos
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // 2. Criação do novo usuário no banco de dados
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password), // Criptografia de senha obrigatória
         ]);
 
+        // 3. Disparo do evento de registro (pode ser usado para e-mails de boas-vindas)
         event(new Registered($user));
 
-        Auth::login($user);
+        /** * AJUSTE SÊNIOR: 
+         * Removemos o 'Auth::login($user);' para que VOCÊ continue logado 
+         * enquanto cadastra novos membros na equipe Simplemind.
+         */
 
-        return redirect(route('dashboard', absolute: false));
+        // 4. Redirecionamento para o painel com mensagem de feedback
+        return redirect()->route('admin.index')
+            ->with('sucesso', 'Novo administrador cadastrado com sucesso!');
     }
 }

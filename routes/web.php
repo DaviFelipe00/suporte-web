@@ -2,43 +2,49 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SolicitacaoController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Rotas Públicas (Acessíveis por qualquer visitante)
+| Rotas Públicas (Simplemind - Suporte Técnico)
 |--------------------------------------------------------------------------
 */
 
-// Exibe o formulário de solicitação da Simplemind
+// Rota inicial que exibe o formulário de abertura de chamado
 Route::get('/', function () {
     return view('solicitacao');
 })->name('home');
 
-// Processa o envio do formulário e dos anexos
+// Processa o envio dos dados do chamado e anexos
 Route::post('/enviar', [SolicitacaoController::class, 'store'])->name('solicitacao.store');
 
 /*
 |--------------------------------------------------------------------------
-| Rotas Protegidas (Exigem Login)
+| Rotas Protegidas (Painel Administrativo)
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // Painel Administrativo: Visualização dos chamados
-    Route::get('/admin', [SolicitacaoController::class, 'index'])->name('admin.index');
-
-    // Dashboard padrão do Breeze (redirecionado ou mantido para estatísticas)
+    // Dashboard: Visão geral de métricas e status
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Gerenciamento de Perfil do Usuário
+    // Controle de Chamados: Listagem principal de solicitações
+    Route::get('/admin', [SolicitacaoController::class, 'index'])->name('admin.index');
+
+    // Gerenciamento de Equipe: Criação de novos Administradores (Protegido internamente)
+    // Essas rotas permitem que o Admin logado cadastre outros membros da equipe
+    Route::get('/admin/novo-usuario', [RegisteredUserController::class, 'create'])->name('admin.user.create');
+    Route::post('/admin/novo-usuario', [RegisteredUserController::class, 'store'])->name('admin.user.store');
+
+    // Gestão de Perfil (Breeze default)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Inclui as rotas de autenticação (Login, Registro, Password Reset, etc.)
+// Inclui as rotas de autenticação (Login, Logout, Recuperação de Senha)
 require __DIR__.'/auth.php';

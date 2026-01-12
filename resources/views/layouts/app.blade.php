@@ -15,51 +15,55 @@
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans antialiased">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('home') }}" class="flex items-center gap-2 transition-opacity hover:opacity-80">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo Simplemind" class="h-10 w-auto">
-            </a>
-        </div>
-        
-        <div class="hidden md:flex items-center gap-4 text-gray-600 font-medium">
-            @auth
-                <a href="{{ route('admin.index') }}" 
-                   class="px-5 py-2 rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 border
-                   {{ request()->routeIs('admin.index') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold ring-2 ring-blue-100' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
-                    @if(request()->routeIs('admin.index'))
-                        <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> 
-                    @endif
-                    Controle de Chamados
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 transition-opacity hover:opacity-80">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo Simplemind" class="h-10 w-auto">
                 </a>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-4 text-gray-600 font-medium">
+                @auth
+                    <a href="{{ route('admin.user.create') }}" class="hover:text-blue-600 transition-colors text-sm px-2">
+                        + Novo Admin
+                    </a>
 
-                <a href="{{ route('dashboard') }}" 
-                   class="px-5 py-2 rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 border
-                   {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold ring-2 ring-blue-100' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
-                    @if(request()->routeIs('dashboard'))
-                        <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> 
-                    @endif
-                    Dashboard
-                </a>
-                
-                <form method="POST" action="{{ route('logout') }}" class="inline ml-2">
-                    @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all px-3 py-2 hover:bg-red-50 rounded-lg active:scale-95">
-                        Sair
-                    </button>
-                </form>
-            @else
-                <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('home') ? 'text-blue-600 font-bold underline decoration-2 underline-offset-8' : '' }}">
-                    Suporte Técnico
-                </a>
+                    <a href="{{ route('admin.index') }}" 
+                       class="px-5 py-2 rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 border
+                       {{ request()->routeIs('admin.index') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold ring-2 ring-blue-100' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+                        @if(request()->routeIs('admin.index'))
+                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> 
+                        @endif
+                        Controle de Chamados
+                    </a>
 
-                <a href="{{ route('login') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
-                    Painel de Controle
-                </a>
-            @endauth
-        </div>
-    </nav>
-</header>
+                    <a href="{{ route('dashboard') }}" 
+                       class="px-5 py-2 rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 border
+                       {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold ring-2 ring-blue-100' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+                        @if(request()->routeIs('dashboard'))
+                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> 
+                        @endif
+                        Dashboard
+                    </a>
+                    
+                    <form method="POST" action="{{ route('logout') }}" class="inline ml-2">
+                        @csrf
+                        <button type="submit" class="text-red-500 hover:text-red-700 font-bold transition-all px-3 py-2 hover:bg-red-50 rounded-lg active:scale-95">
+                            Sair
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('home') ? 'text-blue-600 font-bold underline decoration-2 underline-offset-8' : '' }}">
+                        Suporte Técnico
+                    </a>
+
+                    <a href="{{ route('login') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
+                        Painel de Controle
+                    </a>
+                @endauth
+            </div>
+        </nav>
+    </header>
 
     <main class="flex-grow container mx-auto px-6 py-10">
         @yield('content')
