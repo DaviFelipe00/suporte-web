@@ -12,15 +12,31 @@ use Carbon\Carbon;
 class SolicitacaoController extends Controller
 {
     /**
-     * Exibe o resumo operacional (Dashboard) para o Admin.
-     * Dados para indicadores de status, motivos e atividades recentes.
+     * Exibe o resumo operacional e métricas avançadas (Dashboard).
      */
     public function dashboard()
     {
+        // KPIs de Eficiência
         $totalChamados = Solicitacao::count();
-        $chamadosHoje = Solicitacao::whereDate('created_at', Carbon::today())->count();
+        $totalResolvidos = Solicitacao::where('status', 'resolvido')->count();
+        
+        // Cálculo do Tempo Médio de Resolução (TMR) em horas
+        $tmrHoras = Solicitacao::where('status', 'resolvido')
+            ->whereNotNull('resolvido_em')
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolvido_em)) as avg_tmr')
+            ->value('avg_tmr') ?? 0;
 
-        // Agrupamento por status para os cards superiores
+        // SLA: Chamados abertos há mais de 24h sem resolução
+        $foraDoSla = Solicitacao::where('status', '!=', 'resolvido')
+            ->where('created_at', '<', now()->subDay())
+            ->count();
+
+        // Distribuição por Prioridade para o Gráfico de Radar
+        $prioridades = Solicitacao::select('prioridade', DB::raw('count(*) as total'))
+            ->groupBy('prioridade')
+            ->pluck('total', 'prioridade');
+
+        // Agrupamento por status para os indicadores rápidos
         $statusCounts = Solicitacao::select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -30,20 +46,27 @@ class SolicitacaoController extends Controller
             ->groupBy('motivo_contato')
             ->get();
 
-        // Feed de atividade recente (últimos 5)
-        $ultimosChamados = Solicitacao::latest()->take(5)->get();
+        // Tendência dos últimos 7 dias para o gráfico de linha
+        $tendenciaSemanal = Solicitacao::selectRaw('DATE(created_at) as data, count(*) as total')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->groupBy('data')
+            ->orderBy('data')
+            ->get();
 
         return view('dashboard', compact(
             'totalChamados', 
-            'chamadosHoje', 
+            'totalResolvidos',
+            'tmrHoras', 
+            'foraDoSla', 
+            'prioridades', 
             'statusCounts', 
             'estatisticasMotivo', 
-            'ultimosChamados'
+            'tendenciaSemanal'
         ));
     }
 
     /**
-     * Exibe a listagem principal para o Painel Admin.
+     * Exibe a listagem administrativa de chamados.
      */
     public function index()
     {
@@ -52,20 +75,28 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Atualiza o chamado (Status e Resposta Técnica).
-     * Nota: O erro de edição geralmente é resolvido adicionando 'resposta_admin' ao $fillable do Model.
+     * Atualiza o chamado e automatiza métricas de tempo.
      */
     public function update(Request $request, Solicitacao $solicitacao)
     {
         $request->validate([
             'status' => 'required|in:novo,pendente,em_andamento,resolvido',
+            'prioridade' => 'nullable|in:baixa,media,alta,urgente',
             'resposta_admin' => 'nullable|string'
         ]);
 
-        $solicitacao->update([
+        $dados = [
             'status' => $request->status,
-            'resposta_admin' => $request->resposta_admin
-        ]);
+            'resposta_admin' => $request->resposta_admin,
+            'prioridade' => $request->prioridade ?? $solicitacao->prioridade
+        ];
+
+        // Lógica Sênior: Registra automaticamente o tempo de conclusão se finalizado
+        if ($request->status === 'resolvido' && $solicitacao->status !== 'resolvido') {
+            $dados['resolvido_em'] = now();
+        }
+
+        $solicitacao->update($dados);
 
         return back()->with('sucesso', 'Chamado atualizado com sucesso!');
     }
@@ -80,7 +111,7 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Cria a solicitação, gera protocolo e processa anexos.
+     * Cria a solicitação e gera o protocolo.
      */
     public function store(Request $request)
     {
@@ -90,12 +121,13 @@ class SolicitacaoController extends Controller
             'email_solicitante'    => 'required|email',
             'motivo_contato'       => 'required',
             'descricao_duvida'     => 'required',
+            'prioridade'           => 'nullable|in:baixa,media,alta,urgente',
             'anexo.*'              => 'nullable|file|mimes:jpg,png,pdf|max:2048', 
         ]);
 
-        // Geração de Protocolo Sênior: AAAAMMDD-HASH
         $protocolo = date('Ymd') . '-' . strtoupper(Str::random(6));
         $dados['protocolo'] = $protocolo;
+        $dados['prioridade'] = $request->prioridade ?? 'media';
 
         if ($request->hasFile('anexo')) {
             $arquivosSalvos = [];
@@ -113,12 +145,11 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Consulta pública de protocolo (Sem necessidade de login).
+     * Consulta pública de protocolo.
      */
     public function acompanhar(Request $request)
     {
         $request->validate(['protocolo' => 'required|string']);
-
         $solicitacao = Solicitacao::where('protocolo', $request->protocolo)->first();
 
         return view('acompanhar', compact('solicitacao'))->with('busca_realizada', true);
