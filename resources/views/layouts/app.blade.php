@@ -121,6 +121,37 @@
     </footer>
 
     @guest
+        <div id="chat-window" class="hidden fixed bottom-24 right-6 w-80 md:w-96 bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100 z-50 flex flex-col transition-all duration-300 transform">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">🤖</div>
+                    <div>
+                        <p class="text-sm font-bold leading-none">Assistente Simplemind</p>
+                        <p class="text-[10px] text-blue-100 mt-1">Online agora</p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="hover:bg-blue-700 p-1 rounded transition-colors text-xl">&times;</button>
+            </div>
+
+            <div id="chat-messages" class="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50 flex flex-col">
+                <div class="bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700">
+                    Olá! Sou o assistente da **Simplemind**. Como posso ajudar você hoje?
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-100 bg-white">
+                <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Digite sua dúvida..." 
+                           class="flex-grow px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <div class="fixed bottom-6 left-6 z-50">
             <a href="https://wa.me/5581999999999?text=Olá,%20preciso%20de%20ajuda%20com%20a%20Simplemind" 
                 target="_blank" 
@@ -132,17 +163,55 @@
         </div>
 
         <div class="fixed bottom-6 right-6 z-50">
-            <button onclick="toggleChat()" class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all transform hover:scale-110 flex items-center justify-center border-2 border-white/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button onclick="toggleChat()" class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all transform hover:scale-110 flex items-center justify-center border-2 border-white/20 active:scale-95 shadow-blue-200">
+                <svg id="bot-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
+                <span id="bot-icon-close" class="hidden text-2xl font-light">&times;</span>
             </button>
         </div>
     @endguest
 
     <script>
         function toggleChat() {
-            alert('Olá! Eu sou o assistente inteligente da Simplemind. Como posso ajudar?');
+            const chatWindow = document.getElementById('chat-window');
+            const iconOpen = document.getElementById('bot-icon-open');
+            const iconClose = document.getElementById('bot-icon-close');
+            
+            chatWindow.classList.toggle('hidden');
+            iconOpen.classList.toggle('hidden');
+            iconClose.classList.toggle('hidden');
+            
+            if(!chatWindow.classList.contains('hidden')) {
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const text = input.value.trim();
+
+            if (text === '') return;
+
+            // Mensagem do Usuário
+            const userDiv = document.createElement('div');
+            userDiv.className = "bg-blue-600 text-white p-3 rounded-lg shadow-sm self-end max-w-[80%] text-sm";
+            userDiv.textContent = text;
+            messages.appendChild(userDiv);
+            
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            // Simulação de Resposta do Bot
+            setTimeout(() => {
+                const botDiv = document.createElement('div');
+                botDiv.className = "bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700";
+                botDiv.innerHTML = "Obrigado por sua mensagem! No momento estou em fase de aprendizado, mas em breve poderei consultar protocolos reais para você.";
+                messages.appendChild(botDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }, 1000);
         }
     </script>
 </body>
