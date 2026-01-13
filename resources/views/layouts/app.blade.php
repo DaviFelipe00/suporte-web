@@ -111,7 +111,7 @@
                 <h4 class="text-white font-bold mb-6 uppercase text-xs tracking-widest">Contato</h4>
                 <div class="space-y-4 text-sm text-gray-300">
                     <p class="flex items-center gap-2 font-medium">📧 suporte@simplemind.com.br</p>
-                    <p class="flex items-center gap-2 font-medium">📞 +55 (81) 99999-9999</p>
+                    <p class="flex items-center gap-2 font-medium">📞 +55 (81) 98235-0502</p>
                 </div>
             </div>
         </div>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="fixed bottom-6 left-6 z-50">
-            <a href="https://wa.me/5581999999999?text=Olá,%20preciso%20de%20ajuda%20com%20a%20Simplemind" 
+            <a href="https://wa.me/558182350502?text=Olá,%20preciso%20de%20ajuda%20com%20a%20Simplemind" 
                 target="_blank" 
                 class="bg-[#25D366] hover:bg-[#20ba5a] text-white p-4 rounded-full shadow-lg transition-all transform hover:scale-110 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 448 512">
