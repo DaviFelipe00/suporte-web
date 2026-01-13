@@ -6,57 +6,72 @@ use App\Models\Solicitacao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str; // Necessário para gerar o protocolo
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class SolicitacaoController extends Controller
 {
     /**
      * Exibe o resumo operacional (Dashboard) para o Admin.
+     * Dados para indicadores de status, motivos e atividades recentes.
      */
     public function dashboard()
     {
-        // Total Geral de Chamados
         $totalChamados = Solicitacao::count();
-
-        // Chamados abertos HOJE
         $chamadosHoje = Solicitacao::whereDate('created_at', Carbon::today())->count();
 
-        // Top motivos de contato (Agrupamento por motivo)
+        // Agrupamento por status para os cards superiores
+        $statusCounts = Solicitacao::select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        // Volume por motivo para o gráfico de barras
         $estatisticasMotivo = Solicitacao::select('motivo_contato', DB::raw('count(*) as total'))
             ->groupBy('motivo_contato')
             ->get();
 
-        return view('dashboard', compact('totalChamados', 'chamadosHoje', 'estatisticasMotivo'));
+        // Feed de atividade recente (últimos 5)
+        $ultimosChamados = Solicitacao::latest()->take(5)->get();
+
+        return view('dashboard', compact(
+            'totalChamados', 
+            'chamadosHoje', 
+            'statusCounts', 
+            'estatisticasMotivo', 
+            'ultimosChamados'
+        ));
     }
 
     /**
-     * Exibe a listagem de chamados para o painel administrativo.
+     * Exibe a listagem principal para o Painel Admin.
      */
     public function index()
     {
-        // Busca todos os chamados ordenados pelos mais recentes
         $chamados = Solicitacao::latest()->get();
-
         return view('admin.index', compact('chamados'));
     }
 
     /**
-     * Atualiza o status de um chamado específico.
+     * Atualiza o chamado (Status e Resposta Técnica).
+     * Nota: O erro de edição geralmente é resolvido adicionando 'resposta_admin' ao $fillable do Model.
      */
     public function update(Request $request, Solicitacao $solicitacao)
     {
         $request->validate([
-            'status' => 'required|in:novo,pendente,em_andamento,resolvido'
+            'status' => 'required|in:novo,pendente,em_andamento,resolvido',
+            'resposta_admin' => 'nullable|string'
         ]);
 
-        $solicitacao->update(['status' => $request->status]);
+        $solicitacao->update([
+            'status' => $request->status,
+            'resposta_admin' => $request->resposta_admin
+        ]);
 
-        return back()->with('sucesso', 'Status do chamado atualizado com sucesso!');
+        return back()->with('sucesso', 'Chamado atualizado com sucesso!');
     }
 
     /**
-     * Remove um chamado permanentemente.
+     * Remove o chamado permanentemente.
      */
     public function destroy(Solicitacao $solicitacao)
     {
@@ -65,11 +80,10 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Processa o envio do formulário, gera Protocolo e salva anexos.
+     * Cria a solicitação, gera protocolo e processa anexos.
      */
     public function store(Request $request)
     {
-        // 1. Validação dos dados
         $dados = $request->validate([
             'nome_solicitante'     => 'required|string|max:255',
             'telefone_solicitante' => 'required',
@@ -79,41 +93,32 @@ class SolicitacaoController extends Controller
             'anexo.*'              => 'nullable|file|mimes:jpg,png,pdf|max:2048', 
         ]);
 
-        // 2. Geração de Protocolo Único (Padrão Sênior: Data + Hash)
+        // Geração de Protocolo Sênior: AAAAMMDD-HASH
         $protocolo = date('Ymd') . '-' . strtoupper(Str::random(6));
         $dados['protocolo'] = $protocolo;
 
-        // 3. Processamento de múltiplos uploads
         if ($request->hasFile('anexo')) {
             $arquivosSalvos = [];
-            
             foreach ($request->file('anexo') as $arquivo) {
                 $arquivosSalvos[] = $arquivo->store('evidencias', 'public');
             }
-            
             $dados['arquivo_anexo'] = json_encode($arquivosSalvos); 
         }
 
         unset($dados['anexo']); 
-        
-        // 4. Salva no banco de dados
         Solicitacao::create($dados);
 
-        // 5. Retorna com o protocolo para ser exibido ao cliente
-        return back()->with('sucesso', 'Solicitação enviada com sucesso! Guarde seu protocolo.')
+        return back()->with('sucesso', 'Solicitação enviada!')
                      ->with('protocolo', $protocolo);
     }
 
     /**
-     * Permite ao cliente acompanhar o status via protocolo.
+     * Consulta pública de protocolo (Sem necessidade de login).
      */
     public function acompanhar(Request $request)
     {
-        $request->validate([
-            'protocolo' => 'required|string'
-        ]);
+        $request->validate(['protocolo' => 'required|string']);
 
-        // Busca pela string exata do protocolo
         $solicitacao = Solicitacao::where('protocolo', $request->protocolo)->first();
 
         return view('acompanhar', compact('solicitacao'))->with('busca_realizada', true);

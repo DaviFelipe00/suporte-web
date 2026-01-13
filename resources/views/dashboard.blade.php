@@ -1,84 +1,113 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - Simplemind')
+@section('title', 'Dashboard Operacional - Simplemind')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Resumo Operacional</h1>
-        <p class="mt-2 text-sm text-gray-600">Acompanhe o desempenho do suporte Simplemind em tempo real.</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-blue-600">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Total de Solicitações</dt>
-                            <dd class="text-2xl font-bold text-gray-900">{{ $totalChamados }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
+    <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Painel de Controle</h1>
+            <p class="mt-1 text-sm text-gray-500 font-medium italic">Dados atualizados em tempo real para a gestão Simplemind.</p>
         </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-500">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
-                        <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Abertos Hoje</dt>
-                            <dd class="text-2xl font-bold text-gray-900">{{ $chamadosHoje }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-amber-500">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-amber-100 rounded-md p-3">
-                        <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Aguardando Resposta</dt>
-                            <dd class="text-2xl font-bold text-gray-900">{{ $totalChamados }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
+        <div class="flex gap-2">
+            <span class="inline-flex items-center px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-sm text-xs font-black text-blue-600 uppercase tracking-widest">
+                📅 {{ date('d/m/Y') }}
+            </span>
         </div>
     </div>
 
-    <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">Volume por Motivo de Contato</h3>
-        <div class="space-y-4">
-            @foreach($estatisticasMotivo as $item)
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="font-medium text-gray-700">{{ ucfirst($item->motivo_contato) }}</span>
-                    <span class="text-gray-500">{{ $item->total }} chamados</span>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Novos</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $statusCounts['novo'] ?? 0 }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Pendentes</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $statusCounts['pendente'] ?? 0 }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Em Andamento</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $statusCounts['em_andamento'] ?? 0 }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <p class="text-[10px] font-black text-green-400 uppercase tracking-widest mb-1">Resolvidos</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $statusCounts['resolvido'] ?? 0 }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 space-y-8">
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="text-lg font-bold opacity-80">Hoje</h3>
+                    <p class="text-5xl font-black mt-2">{{ $chamadosHoje }}</p>
+                    <p class="text-sm mt-4 font-medium italic opacity-90">Novas solicitações recebidas nas últimas 24h.</p>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ ($item->total / $totalChamados) * 100 }}%"></div>
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-3xl p-8 border border-gray-100">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Volume por Categoria</h3>
+                <div class="space-y-6">
+                    @foreach($estatisticasMotivo as $item)
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="font-bold text-gray-700">{{ ucfirst($item->motivo_contato) }}</span>
+                            <span class="text-gray-400 font-mono">{{ $item->total }}</span>
+                        </div>
+                        <div class="w-full bg-gray-50 rounded-full h-1.5">
+                            <div class="bg-blue-600 h-1.5 rounded-full shadow-sm" style="width: {{ ($item->total / max($totalChamados, 1)) * 100 }}%"></div>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
             </div>
-            @endforeach
+        </div>
+
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow-sm rounded-3xl border border-gray-100 h-full">
+                <div class="p-8 border-b border-gray-50 flex justify-between items-center">
+                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Solicitações Recentes</h3>
+                    <a href="{{ route('admin.index') }}" class="text-blue-600 text-[10px] font-black uppercase hover:underline">Ver tudo</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($ultimosChamados as $chamado)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-8 py-5">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-800">{{ $chamado->nome_solicitante }}</span>
+                                        <span class="text-[10px] font-mono font-bold text-blue-500 mt-1">{{ $chamado->protocolo }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-5">
+                                    <span class="text-[10px] font-black text-gray-400 uppercase">{{ $chamado->created_at->diffForHumans() }}</span>
+                                </td>
+                                <td class="px-8 py-5 text-right">
+                                    @php
+                                        $color = match($chamado->status) {
+                                            'novo' => 'text-gray-400',
+                                            'pendente' => 'text-amber-500',
+                                            'em_andamento' => 'text-blue-500',
+                                            'resolvido' => 'text-green-500',
+                                            default => 'text-gray-400'
+                                        };
+                                    @endphp
+                                    <span class="text-[10px] font-black uppercase tracking-tighter {{ $color }}">
+                                        {{ str_replace('_', ' ', $chamado->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-8 py-20 text-center text-sm text-gray-400 italic">Nenhuma atividade recente registrada.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
