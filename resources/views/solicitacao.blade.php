@@ -7,14 +7,29 @@
     
     <h2 class="text-2xl font-bold text-gray-800 mb-6">Criar Nova Solicitação</h2>
 
-    @if(session('sucesso'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            {{ session('sucesso') }}
+   @if(session('sucesso'))
+    <div class="mb-8 animate-fade-in">
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm mb-4">
+            <div class="flex items-center">
+                <span class="text-green-600 text-xl mr-3">✅</span>
+                <p class="text-green-800 font-bold">{{ session('sucesso') }}</p>
+            </div>
         </div>
-    @endif
+
+        @if(session('protocolo'))
+            <div class="bg-blue-600 rounded-xl p-6 text-white shadow-xl transform transition-all hover:scale-[1.01]">
+                <p class="text-blue-100 text-xs uppercase font-black tracking-widest mb-2">Seu Número de Protocolo</p>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-3xl font-mono font-bold">{{ session('protocolo') }}</h3>
+                    <a href="{{ route('protocolo.index') }}" class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition-colors">
+                        Acompanhar agora
+                    </a>
+                </div>
+                <p class="mt-4 text-sm text-blue-100 italic">* Guarde este número para consultar o status do seu chamado futuramente.</p>
+            </div>
+        @endif
+    </div>
+@endif
 
     <form action="{{ route('solicitacao.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
