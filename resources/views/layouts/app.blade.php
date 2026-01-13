@@ -187,32 +187,56 @@
             }
         }
 
-        function handleChatSubmit(e) {
-            e.preventDefault();
-            const input = document.getElementById('chat-input');
-            const messages = document.getElementById('chat-messages');
-            const text = input.value.trim();
+        async function handleChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+    const text = input.value.trim();
 
-            if (text === '') return;
+    if (text === '') return;
 
-            // Mensagem do Usuário
-            const userDiv = document.createElement('div');
-            userDiv.className = "bg-blue-600 text-white p-3 rounded-lg shadow-sm self-end max-w-[80%] text-sm";
-            userDiv.textContent = text;
-            messages.appendChild(userDiv);
-            
-            input.value = '';
-            messages.scrollTop = messages.scrollHeight;
+    // 1. Renderiza mensagem do usuário
+    const userDiv = document.createElement('div');
+    userDiv.className = "bg-blue-600 text-white p-3 rounded-lg shadow-sm self-end max-w-[80%] text-sm";
+    userDiv.textContent = text;
+    messages.appendChild(userDiv);
+    
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
 
-            // Simulação de Resposta do Bot
-            setTimeout(() => {
-                const botDiv = document.createElement('div');
-                botDiv.className = "bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700";
-                botDiv.innerHTML = "Obrigado por sua mensagem! No momento estou em fase de aprendizado, mas em breve poderei consultar protocolos reais para você.";
-                messages.appendChild(botDiv);
-                messages.scrollTop = messages.scrollHeight;
-            }, 1000);
-        }
+    // 2. Adiciona indicador de "Digitando..."
+    const typingDiv = document.createElement('div');
+    typingDiv.className = "bg-gray-200 text-gray-500 p-2 rounded-lg self-start text-xs italic animate-pulse";
+    typingDiv.textContent = "🤖 Bot está pensando...";
+    typingDiv.id = "typing-indicator";
+    messages.appendChild(typingDiv);
+
+    try {
+        // 3. Envia para o backend Laravel
+        const response = await fetch("{{ route('chatbot.handle') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ message: text })
+        });
+
+        const data = await response.json();
+        
+        // 4. Remove indicador e mostra resposta real
+        document.getElementById('typing-indicator').remove();
+        const botDiv = document.createElement('div');
+        botDiv.className = "bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700";
+        botDiv.innerHTML = data.response;
+        messages.appendChild(botDiv);
+        messages.scrollTop = messages.scrollHeight;
+
+    } catch (error) {
+        document.getElementById('typing-indicator').remove();
+        console.error("Erro no chat:", error);
+    }
+}
     </script>
 </body>
 </html>

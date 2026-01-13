@@ -24,6 +24,8 @@ Route::get('/acompanhar', function () {
 
 Route::post('/acompanhar-busca', [SolicitacaoController::class, 'acompanhar'])->name('protocolo.buscar');
 
+// Rota para o ChatBot Inteligente
+Route::post('/chatbot', [App\Http\Controllers\ChatBotController::class, 'handle'])->name('chatbot.handle');
 /*
 |--------------------------------------------------------------------------
 | Rotas Protegidas (Painel Administrativo)
