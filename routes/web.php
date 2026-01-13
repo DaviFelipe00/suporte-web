@@ -26,6 +26,14 @@ Route::post('/enviar', [SolicitacaoController::class, 'store'])->name('solicitac
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
+
+// Rota para a página de busca de protocolo
+    Route::get('/acompanhar', function () {
+    return view('acompanhar');
+        })->name('protocolo.index');
+
+    // Rota que processa a busca
+    Route::post('/acompanhar-busca', [SolicitacaoController::class, 'acompanhar'])->name('protocolo.buscar');
     
     // Dashboard: Visão geral de métricas e status
    Route::get('/dashboard', [SolicitacaoController::class, 'dashboard'])

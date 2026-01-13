@@ -24,7 +24,8 @@
             
             <div class="hidden md:flex items-center gap-4 text-gray-600 font-medium">
                 @auth
-                    <a href="{{ route('admin.user.create') }}" class="hover:text-blue-600 transition-colors text-sm px-2">
+                    <a href="{{ route('admin.user.create') }}" 
+                       class="hover:text-blue-600 transition-colors text-sm px-2 {{ request()->routeIs('admin.user.create') ? 'text-blue-600 font-bold' : '' }}">
                         + Novo Admin
                     </a>
 
@@ -53,11 +54,18 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors {{ request()->routeIs('home') ? 'text-blue-600 font-bold underline decoration-2 underline-offset-8' : '' }}">
+                    <a href="{{ route('protocolo.index') }}" 
+                       class="hover:text-blue-600 transition-colors {{ request()->routeIs('protocolo.index') ? 'text-blue-600 font-bold underline decoration-2 underline-offset-8' : '' }}">
+                        Acompanhar Chamado
+                    </a>
+
+                    <a href="{{ route('home') }}" 
+                       class="hover:text-blue-600 transition-colors {{ request()->routeIs('home') ? 'text-blue-600 font-bold underline decoration-2 underline-offset-8' : '' }}">
                         Suporte Técnico
                     </a>
 
-                    <a href="{{ route('login') }}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
+                    <a href="{{ route('login') }}" 
+                       class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md active:scale-95">
                         Painel de Controle
                     </a>
                 @endauth
@@ -83,7 +91,8 @@
             <div>
                 <h4 class="text-white font-bold mb-6 uppercase text-xs tracking-widest">Plataforma</h4>
                 <ul class="space-y-4 text-sm font-medium">
-                    <li><a href="/" class="hover:text-white transition-colors">Nova Solicitação</a></li>
+                    <li><a href="{{ route('home') }}" class="hover:text-white transition-colors">Nova Solicitação</a></li>
+                    <li><a href="{{ route('protocolo.index') }}" class="hover:text-white transition-colors">Acompanhar Chamado</a></li>
                     @auth
                         <li><a href="{{ route('admin.index') }}" class="hover:text-white transition-colors">Controle de Chamados</a></li>
                     @endauth

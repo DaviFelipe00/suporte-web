@@ -6,9 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Solicitacao extends Model
 {
-    // Definimos quais campos o formulário pode preencher no banco
-   protected $fillable = [
-    'nome_solicitante', 'telefone_solicitante', 'email_solicitante', 
-    'motivo_contato', 'descricao_duvida', 'arquivo_anexo', 'status'
-];
+    /**
+     * Atributos que podem ser preenchidos em massa.
+     * * Incluímos o 'protocolo' para permitir que o sistema salve 
+     * o código gerado automaticamente no Controller.
+     */
+    protected $fillable = [
+        'protocolo', 
+        'nome_solicitante', 
+        'telefone_solicitante', 
+        'email_solicitante', 
+        'motivo_contato', 
+        'descricao_duvida', 
+        'arquivo_anexo', 
+        'status'
+    ];
 }
