@@ -135,7 +135,7 @@
 
             <div id="chat-messages" class="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50 flex flex-col">
                 <div class="bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700">
-                    Olá! Sou o assistente da **Simplemind**. Como posso ajudar você hoje?
+                    Olá! Sou o assistente da <strong>Simplemind</strong>. Como posso ajudar você hoje?
                 </div>
             </div>
 
@@ -188,55 +188,87 @@
         }
 
         async function handleChatSubmit(e) {
-    e.preventDefault();
-    const input = document.getElementById('chat-input');
-    const messages = document.getElementById('chat-messages');
-    const text = input.value.trim();
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const text = input.value.trim();
 
-    if (text === '') return;
+            if (text === '') return;
 
-    // 1. Renderiza mensagem do usuário
-    const userDiv = document.createElement('div');
-    userDiv.className = "bg-blue-600 text-white p-3 rounded-lg shadow-sm self-end max-w-[80%] text-sm";
-    userDiv.textContent = text;
-    messages.appendChild(userDiv);
-    
-    input.value = '';
-    messages.scrollTop = messages.scrollHeight;
+            // 1. Mensagem do usuário
+            appendMessage(text, 'user');
+            input.value = '';
 
-    // 2. Adiciona indicador de "Digitando..."
-    const typingDiv = document.createElement('div');
-    typingDiv.className = "bg-gray-200 text-gray-500 p-2 rounded-lg self-start text-xs italic animate-pulse";
-    typingDiv.textContent = "🤖 Bot está pensando...";
-    typingDiv.id = "typing-indicator";
-    messages.appendChild(typingDiv);
+            // 2. Indicador de pensamento
+            const typingId = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.id = typingId;
+            typingDiv.className = "bg-gray-200 text-gray-500 p-2 rounded-lg self-start text-xs italic animate-pulse";
+            typingDiv.textContent = "🤖 Bot está pensando...";
+            messages.appendChild(typingDiv);
+            messages.scrollTop = messages.scrollHeight;
 
-    try {
-        // 3. Envia para o backend Laravel
-        const response = await fetch("{{ route('chatbot.handle') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ message: text })
-        });
+            try {
+                const response = await fetch("{{ route('chatbot.handle') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ message: text })
+                });
 
-        const data = await response.json();
-        
-        // 4. Remove indicador e mostra resposta real
-        document.getElementById('typing-indicator').remove();
-        const botDiv = document.createElement('div');
-        botDiv.className = "bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700";
-        botDiv.innerHTML = data.response;
-        messages.appendChild(botDiv);
-        messages.scrollTop = messages.scrollHeight;
+                // Verifica se a resposta é OK antes de processar
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
 
-    } catch (error) {
-        document.getElementById('typing-indicator').remove();
-        console.error("Erro no chat:", error);
-    }
-}
+                const data = await response.json();
+                
+                // Remove o indicador de digitação
+                const typingElement = document.getElementById(typingId);
+                if (typingElement) {
+                    typingElement.remove();
+                }
+
+                // 3. Renderiza a resposta ou mensagem de erro padrão
+                const reply = data.response || data.message || "Erro ao receber resposta do servidor.";
+                appendMessage(reply, 'bot');
+
+            } catch (error) {
+                console.error('Erro no chatbot:', error);
+                
+                // Remove o indicador de digitação
+                const typingElement = document.getElementById(typingId);
+                if (typingElement) {
+                    typingElement.remove();
+                }
+                
+                appendMessage("⚠️ Erro de conexão com o bot. Por favor, tente novamente.", 'bot');
+            }
+        }
+
+        // Função auxiliar para adicionar mensagens
+        function appendMessage(text, side) {
+            const messages = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = side === 'user' 
+                ? "bg-blue-600 text-white p-3 rounded-lg shadow-sm self-end max-w-[80%] text-sm"
+                : "bg-white p-3 rounded-lg shadow-sm self-start max-w-[80%] border border-gray-100 text-sm text-gray-700";
+            
+            // Sanitiza o texto para evitar XSS e preserva quebras de linha
+            const sanitizedText = String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/\n/g, '<br>');
+            
+            div.innerHTML = sanitizedText;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
     </script>
 </body>
 </html>
