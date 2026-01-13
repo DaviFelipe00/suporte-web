@@ -36,6 +36,25 @@ class SolicitacaoController extends Controller
 
         return view('admin.index', compact('chamados'));
     }
+    
+    // app/Http/Controllers/SolicitacaoController.php
+
+public function update(Request $request, Solicitacao $solicitacao)
+{
+    $request->validate([
+        'status' => 'required|in:novo,pendente,em_andamento,resolvido'
+    ]);
+
+    $solicitacao->update(['status' => $request->status]);
+
+    return back()->with('sucesso', 'Status do chamado atualizado com sucesso!');
+}
+
+public function destroy(Solicitacao $solicitacao)
+{
+    $solicitacao->delete();
+    return back()->with('sucesso', 'Chamado excluído permanentemente.');
+}
 
     /**
      * Processa o envio do formulário e salva os anexos.

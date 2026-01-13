@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Essas rotas permitem que o Admin logado cadastre outros membros da equipe
     Route::get('/admin/novo-usuario', [RegisteredUserController::class, 'create'])->name('admin.user.create');
     Route::post('/admin/novo-usuario', [RegisteredUserController::class, 'store'])->name('admin.user.store');
+    Route::patch('/admin/chamados/{solicitacao}', [SolicitacaoController::class, 'update'])->name('admin.chamados.update');
+    Route::delete('/admin/chamados/{solicitacao}', [SolicitacaoController::class, 'destroy'])->name('admin.chamados.destroy');
 
     // Gestão de Perfil (Breeze default)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
