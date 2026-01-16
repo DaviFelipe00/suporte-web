@@ -9,11 +9,23 @@
             <h1 class="text-3xl font-black text-gray-900 tracking-tight">Painel de Inteligência</h1>
             <p class="mt-1 text-sm text-gray-500 font-medium italic">Métricas de performance e saúde da operação em tempo real.</p>
         </div>
-        <div class="flex gap-3">
-            <span class="inline-flex items-center px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-sm text-[10px] font-black text-blue-600 uppercase tracking-widest">
-                📅 {{ date('d/m/Y') }}
-            </span>
-        </div>
+        
+        <form action="{{ route('dashboard') }}" method="GET" class="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-2 px-3">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">De</label>
+                <input type="date" name="data_inicio" value="{{ $dataInicio }}" 
+                       class="border-none p-0 text-xs font-bold text-blue-600 focus:ring-0">
+            </div>
+            <div class="h-4 border-l border-gray-200"></div>
+            <div class="flex items-center gap-2 px-3">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Até</label>
+                <input type="date" name="data_fim" value="{{ $dataFim }}" 
+                       class="border-none p-0 text-xs font-bold text-blue-600 focus:ring-0">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all">
+                Filtrar
+            </button>
+        </form>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
@@ -45,7 +57,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
             <div class="flex justify-between items-center mb-8">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Fluxo de Solicitações (Últimos 7 dias)</h3>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Fluxo de Solicitações no Período</h3>
                 <span class="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg">Tendência</span>
             </div>
             <div class="h-72">

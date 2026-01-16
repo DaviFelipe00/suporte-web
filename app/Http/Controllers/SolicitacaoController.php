@@ -13,42 +13,52 @@ class SolicitacaoController extends Controller
 {
     /**
      * Exibe o resumo operacional e métricas avançadas (Dashboard).
+     * Refatorado para suportar filtros de data globais.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        // KPIs de Eficiência
-        $totalChamados = Solicitacao::count();
-        $totalResolvidos = Solicitacao::where('status', 'resolvido')->count();
+        // Define o período: busca da request ou padrão dos últimos 30 dias
+        $dataInicio = $request->get('data_inicio', now()->subDays(30)->toDateString());
+        $dataFim = $request->get('data_fim', now()->toDateString());
+
+        // Query base para garantir que todas as métricas usem o mesmo filtro
+        $queryBase = Solicitacao::whereBetween('created_at', [
+            $dataInicio . ' 00:00:00', 
+            $dataFim . ' 23:59:59'
+        ]);
+
+        // KPIs de Eficiência (usando clone para não afetar a query original)
+        $totalChamados = (clone $queryBase)->count();
+        $totalResolvidos = (clone $queryBase)->where('status', 'resolvido')->count();
         
-        // Cálculo do Tempo Médio de Resolução (TMR) em horas
-        $tmrHoras = Solicitacao::where('status', 'resolvido')
+        // Cálculo do TMR em horas
+        $tmrHoras = (clone $queryBase)->where('status', 'resolvido')
             ->whereNotNull('resolvido_em')
             ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolvido_em)) as avg_tmr')
             ->value('avg_tmr') ?? 0;
 
-        // SLA: Chamados abertos há mais de 24h sem resolução
-        $foraDoSla = Solicitacao::where('status', '!=', 'resolvido')
+        // SLA: Chamados pendentes há mais de 24h
+        $foraDoSla = (clone $queryBase)->where('status', '!=', 'resolvido')
             ->where('created_at', '<', now()->subDay())
             ->count();
 
-        // Distribuição por Prioridade para o Gráfico de Radar
-        $prioridades = Solicitacao::select('prioridade', DB::raw('count(*) as total'))
+        // Distribuição por Prioridade
+        $prioridades = (clone $queryBase)->select('prioridade', DB::raw('count(*) as total'))
             ->groupBy('prioridade')
             ->pluck('total', 'prioridade');
 
-        // Agrupamento por status para os indicadores rápidos
-        $statusCounts = Solicitacao::select('status', DB::raw('count(*) as total'))
+        // Agrupamento por status
+        $statusCounts = (clone $queryBase)->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // Volume por motivo para o gráfico de barras
-        $estatisticasMotivo = Solicitacao::select('motivo_contato', DB::raw('count(*) as total'))
+        // Volume por motivo
+        $estatisticasMotivo = (clone $queryBase)->select('motivo_contato', DB::raw('count(*) as total'))
             ->groupBy('motivo_contato')
             ->get();
 
-        // Tendência dos últimos 7 dias para o gráfico de linha
-        $tendenciaSemanal = Solicitacao::selectRaw('DATE(created_at) as data, count(*) as total')
-            ->where('created_at', '>=', now()->subDays(7))
+        // Tendência ajustada ao período do filtro
+        $tendenciaSemanal = (clone $queryBase)->selectRaw('DATE(created_at) as data, count(*) as total')
             ->groupBy('data')
             ->orderBy('data')
             ->get();
@@ -61,21 +71,33 @@ class SolicitacaoController extends Controller
             'prioridades', 
             'statusCounts', 
             'estatisticasMotivo', 
-            'tendenciaSemanal'
+            'tendenciaSemanal',
+            'dataInicio',
+            'dataFim'
         ));
     }
 
     /**
-     * Exibe a listagem administrativa de chamados.
+     * Exibe a listagem administrativa com suporte a filtro de data.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $chamados = Solicitacao::latest()->get();
+        $query = Solicitacao::query();
+
+        // Aplicação condicional do filtro de data
+        if ($request->filled('data_inicio') && $request->filled('data_fim')) {
+            $query->whereBetween('created_at', [
+                $request->data_inicio . ' 00:00:00',
+                $request->data_fim . ' 23:59:59'
+            ]);
+        }
+
+        $chamados = $query->latest()->get();
         return view('admin.index', compact('chamados'));
     }
 
     /**
-     * Atualiza o chamado e automatiza métricas de tempo.
+     * Atualiza o chamado e registra o tempo de resolução se necessário.
      */
     public function update(Request $request, Solicitacao $solicitacao)
     {
@@ -91,7 +113,7 @@ class SolicitacaoController extends Controller
             'prioridade' => $request->prioridade ?? $solicitacao->prioridade
         ];
 
-        // Lógica Sênior: Registra automaticamente o tempo de conclusão se finalizado
+        // Lógica: Se o status mudar para resolvido, marca o timestamp de conclusão
         if ($request->status === 'resolvido' && $solicitacao->status !== 'resolvido') {
             $dados['resolvido_em'] = now();
         }
@@ -102,16 +124,7 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Remove o chamado permanentemente.
-     */
-    public function destroy(Solicitacao $solicitacao)
-    {
-        $solicitacao->delete();
-        return back()->with('sucesso', 'Chamado excluído permanentemente.');
-    }
-
-    /**
-     * Cria a solicitação e gera o protocolo.
+     * Cria a solicitação com geração de protocolo aleatório.
      */
     public function store(Request $request)
     {
@@ -144,14 +157,17 @@ class SolicitacaoController extends Controller
                      ->with('protocolo', $protocolo);
     }
 
-    /**
-     * Consulta pública de protocolo.
-     */
     public function acompanhar(Request $request)
     {
         $request->validate(['protocolo' => 'required|string']);
         $solicitacao = Solicitacao::where('protocolo', $request->protocolo)->first();
 
         return view('acompanhar', compact('solicitacao'))->with('busca_realizada', true);
+    }
+
+    public function destroy(Solicitacao $solicitacao)
+    {
+        $solicitacao->delete();
+        return back()->with('sucesso', 'Chamado excluído permanentemente.');
     }
 }

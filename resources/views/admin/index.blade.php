@@ -3,7 +3,7 @@
 @section('title', 'Controle de Chamados - Simplemind')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     @if(session('sucesso'))
         <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm animate-fade-in">
             <p class="text-sm font-bold text-green-800">✅ {{ session('sucesso') }}</p>
@@ -17,6 +17,34 @@
         </div>
     </div>
 
+    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm mb-8">
+        <form method="GET" action="{{ route('admin.index') }}" class="flex flex-wrap items-end gap-4">
+            <div class="flex flex-col flex-1 min-w-[200px]">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2">Data Inicial</label>
+                <input type="date" name="data_inicio" value="{{ request('data_inicio') }}" 
+                       class="w-full rounded-xl border-gray-100 text-sm font-bold text-gray-700 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            </div>
+            
+            <div class="flex flex-col flex-1 min-w-[200px]">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2">Data Final</label>
+                <input type="date" name="data_fim" value="{{ request('data_fim') }}" 
+                       class="w-full rounded-xl border-gray-100 text-sm font-bold text-gray-700 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="bg-gray-900 text-white px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-gray-200">
+                    Filtrar Lista
+                </button>
+                
+                @if(request()->filled('data_inicio') || request()->filled('data_fim'))
+                    <a href="{{ route('admin.index') }}" class="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-600 transition-all flex items-center">
+                        Limpar
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <div class="bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50/50">
@@ -28,7 +56,7 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
-                @foreach($chamados as $chamado)
+                @forelse($chamados as $chamado)
                 <tr class="hover:bg-blue-50/10 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-bold text-gray-900">{{ $chamado->nome_solicitante }}</div>
@@ -50,7 +78,13 @@
                         </button>
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">
+                        Nenhum chamado encontrado para o período selecionado.
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -77,8 +111,7 @@
 
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase block mb-3">Arquivos em Anexo</label>
-                    <div id="modalAnexos" class="grid grid-cols-3 md:grid-cols-4 gap-4">
-                        </div>
+                    <div id="modalAnexos" class="grid grid-cols-3 md:grid-cols-4 gap-4"></div>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
@@ -111,14 +144,12 @@
 
 <script>
     function openTicketModal(id, status, resposta, descricao, anexosJson, protocolo) {
-        // Configura o formulário
         document.getElementById('ticketForm').action = `/admin/chamados/${id}`;
         document.getElementById('modalStatus').value = status;
         document.getElementById('modalResposta').value = resposta;
         document.getElementById('modalDescricao').textContent = descricao;
         document.getElementById('modalProtocolo').textContent = protocolo;
 
-        // Limpa e reconstrói a galeria de anexos
         const container = document.getElementById('modalAnexos');
         container.innerHTML = '';
 
