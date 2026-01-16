@@ -53,6 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/', [InventarioController::class, 'index'])->name('index');
+        Route::post('/', [InventarioController::class, 'store'])->name('store');
+        Route::patch('/{equipamento}', [InventarioController::class, 'update'])->name('update');
+        Route::delete('/{equipamento}', [InventarioController::class, 'destroy'])->name('destroy');
 });
 
 require __DIR__.'/auth.php';
