@@ -77,7 +77,7 @@
                 <a href="{{ route('home') }}"
                    class="px-5 py-2 rounded-lg border transition font-medium
                           bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400">
-                    Suporte Técnico
+                    Abrir Chamado
                 </a>
 
                 <a href="{{ route('login') }}"
