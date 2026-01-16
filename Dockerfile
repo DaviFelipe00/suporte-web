@@ -2,30 +2,20 @@
 # Estágio 1: Dependências de Backend (PHP 8.4)
 # ==========================================
 FROM php:8.4-cli-alpine AS php_builder
-
-# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 WORKDIR /app
-
-# Copiar apenas arquivos de dependências primeiro para aproveitar o cache das camadas
 COPY composer.json composer.lock ./
-
-# Instalar dependências sem scripts (scripts rodam no estágio final)
+# Instalando dependências de produção
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-progress --ignore-platform-req=php+
 
 # ==========================================
-# Estágio 2: Dependências de Frontend (Node/Vite)
+# Estágio 2: Dependências de Frontend (Node 20)
 # ==========================================
 FROM node:20-alpine AS node_builder
-
 WORKDIR /app
-
-# Copiar arquivos de configuração de frontend
 COPY package.json package-lock.json vite.config.js tailwind.config.js postcss.config.js ./
 COPY resources ./resources
 COPY public ./public
-
 RUN npm install && npm run build
 
 # ==========================================
@@ -33,7 +23,7 @@ RUN npm install && npm run build
 # ==========================================
 FROM php:8.4-fpm-alpine
 
-# Instalar dependências do sistema e extensões PHP essenciais
+# Instalar extensões e dependências do sistema
 RUN apk add --no-cache \
     nginx \
     supervisor \
@@ -41,34 +31,38 @@ RUN apk add --no-cache \
     libzip-dev \
     zip \
     unzip \
-    git \
-    oniguruma-dev \
-    curl \
     icu-dev \
-    linux-headers
+    oniguruma-dev
 
-# Instalar extensões PHP (MySQL é o foco aqui conforme sua imagem de credenciais)
 RUN docker-php-ext-install pdo_mysql mbstring gd zip opcache bcmath intl
+
+# Configuração do Opcache para Produção
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.fast_shutdown=1'; \
+    echo 'opcache.enable_cli=1'; \
+    } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 WORKDIR /var/www/html
 
-# Copiar o código do projeto
+# Copiar o código e dependências
 COPY . .
-
-# Copiar dependências prontas dos estágios anteriores
 COPY --from=php_builder /app/vendor ./vendor
 COPY --from=node_builder /app/public/build ./public/build
 
-# Configurar permissões para o Laravel (essencial para evitar erro 500)
+# Ajuste de permissões para o usuário www-data
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copiar configurações de infra (Nginx e Supervisor)
+# Logs do Nginx para o stdout/stderr do Docker
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
+
 COPY ./docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expor a porta do Nginx
 EXPOSE 80
 
-# O Supervisor gerencia o PHP-FPM e o Nginx simultaneamente
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
