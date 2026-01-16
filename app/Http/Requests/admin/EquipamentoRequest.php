@@ -8,7 +8,7 @@ class EquipamentoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Protegido pelo middleware auth na rota
+        return true;
     }
 
     public function rules(): array
