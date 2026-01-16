@@ -19,51 +19,70 @@
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans antialiased">
 
 <!-- HEADER PRINCIPAL -->
+<!-- HEADER PRINCIPAL -->
 <header class="bg-white shadow-sm sticky top-0 z-50">
     <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="{{ route('home') }}" class="flex items-center gap-2 hover:opacity-80">
+        <a href="{{ route('home') }}" class="flex items-center gap-2 hover:opacity-80 transition">
             <img src="{{ asset('images/logo.png') }}" class="h-10" alt="Simplemind">
         </a>
 
-        <div class="hidden md:flex items-center gap-4 text-gray-600 font-medium">
+        <div class="hidden md:flex items-center gap-3">
             @auth
                 <a href="{{ route('admin.inventario.index') }}"
-                   class="{{ request()->routeIs('admin.inventario.*') ? 'text-blue-600 font-bold' : '' }}">
+                   class="px-5 py-2 rounded-lg border transition font-medium
+                   {{ request()->routeIs('admin.inventario.*')
+                        ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold'
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400' }}">
                     Inventário
                 </a>
 
                 <a href="{{ route('admin.user.create') }}"
-                   class="{{ request()->routeIs('admin.user.create') ? 'text-blue-600 font-bold' : '' }}">
-                    + Novo Admin
+                   class="px-5 py-2 rounded-lg border transition font-medium
+                   {{ request()->routeIs('admin.user.create')
+                        ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold'
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400' }}">
+                    Adicionar usuário
                 </a>
 
                 <a href="{{ route('admin.index') }}"
-                   class="px-5 py-2 rounded-lg border transition
+                   class="px-5 py-2 rounded-lg border transition font-medium
                    {{ request()->routeIs('admin.index')
                         ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold'
-                        : 'bg-white border-gray-300 hover:bg-gray-50' }}">
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400' }}">
                     Controle de Chamados
                 </a>
 
                 <a href="{{ route('dashboard') }}"
-                   class="px-5 py-2 rounded-lg border transition
+                   class="px-5 py-2 rounded-lg border transition font-medium
                    {{ request()->routeIs('dashboard')
                         ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold'
-                        : 'bg-white border-gray-300 hover:bg-gray-50' }}">
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400' }}">
                     Dashboard
                 </a>
 
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="ml-2">
                     @csrf
-                    <button class="text-red-500 font-bold hover:text-red-700">
+                    <button class="px-5 py-2 rounded-lg border transition font-medium
+                                   bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400">
                         Sair
                     </button>
                 </form>
             @else
-                <a href="{{ route('protocolo.index') }}">Acompanhar Chamado</a>
-                <a href="{{ route('home') }}">Suporte Técnico</a>
+                <a href="{{ route('protocolo.index') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium
+                          bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400">
+                    Acompanhar Chamado
+                </a>
+
+                <a href="{{ route('home') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium
+                          bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400">
+                    Suporte Técnico
+                </a>
+
                 <a href="{{ route('login') }}"
-                   class="bg-blue-600 text-white px-5 py-2 rounded-lg">
+                   class="px-5 py-2 rounded-lg border transition font-medium
+                          bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700">
                     Painel de Controle
                 </a>
             @endauth
