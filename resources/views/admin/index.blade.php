@@ -50,6 +50,7 @@
             <thead class="bg-gray-50/50">
                 <tr>
                     <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Solicitante</th>
+                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Abertura</th>
                     <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Protocolo</th>
                     <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
                     <th class="px-6 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Ações</th>
@@ -62,6 +63,10 @@
                         <div class="text-sm font-bold text-gray-900">{{ $chamado->nome_solicitante }}</div>
                         <div class="text-xs text-gray-500">{{ $chamado->email_solicitante }}</div>
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold text-gray-700">{{ $chamado->created_at->format('d/m/Y') }}</div>
+                        <div class="text-[10px] text-gray-400 font-mono">{{ $chamado->created_at->format('H:i') }}</div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-blue-600 font-bold">
                         {{ $chamado->protocolo }}
                     </td>
@@ -72,7 +77,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="openTicketModal({{ $chamado->id }}, '{{ addslashes($chamado->status) }}', '{{ addslashes($chamado->resposta_admin) }}', '{{ addslashes($chamado->descricao_duvida) }}', '{{ $chamado->arquivo_anexo }}', '{{ $chamado->protocolo }}')" 
+                        <button onclick="openTicketModal({{ $chamado->id }}, '{{ addslashes($chamado->status) }}', '{{ addslashes($chamado->resposta_admin) }}', '{{ addslashes($chamado->descricao_duvida) }}', '{{ $chamado->arquivo_anexo }}', '{{ $chamado->protocolo }}', '{{ $chamado->created_at->format('d/m/Y H:i') }}')" 
                                 class="text-blue-600 hover:text-blue-800 font-black text-xs uppercase tracking-tighter transition-all">
                             Ver Detalhes & Editar
                         </button>
@@ -80,7 +85,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-400 italic text-sm">
                         Nenhum chamado encontrado para o período selecionado.
                     </td>
                 </tr>
@@ -99,6 +104,7 @@
                 <div>
                     <p class="text-blue-100 text-[10px] font-black uppercase tracking-widest">Protocolo de Atendimento</p>
                     <h3 id="modalProtocolo" class="text-xl font-mono font-bold">---</h3>
+                    <p id="modalDataAbertura" class="text-[10px] text-blue-200 font-mono mt-1"></p>
                 </div>
                 <button type="button" onclick="closeModal()" class="text-white/80 hover:text-white text-3xl">&times;</button>
             </div>
@@ -143,12 +149,13 @@
 </div>
 
 <script>
-    function openTicketModal(id, status, resposta, descricao, anexosJson, protocolo) {
+    function openTicketModal(id, status, resposta, descricao, anexosJson, protocolo, dataAbertura) {
         document.getElementById('ticketForm').action = `/admin/chamados/${id}`;
         document.getElementById('modalStatus').value = status;
         document.getElementById('modalResposta').value = resposta;
         document.getElementById('modalDescricao').textContent = descricao;
         document.getElementById('modalProtocolo').textContent = protocolo;
+        document.getElementById('modalDataAbertura').textContent = `Aberto em: ${dataAbertura}`;
 
         const container = document.getElementById('modalAnexos');
         container.innerHTML = '';
