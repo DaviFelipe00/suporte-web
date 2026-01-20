@@ -13,6 +13,7 @@ class SolicitacaoController extends Controller
 {
     /**
      * Exibe o resumo operacional e métricas avançadas (Dashboard).
+     * Refatorado para garantir que todos os KPIs respeitem o filtro de data.
      */
     public function dashboard(Request $request)
     {
@@ -20,32 +21,33 @@ class SolicitacaoController extends Controller
         $dataInicio = $request->get('data_inicio', now()->subDays(30)->toDateString());
         $dataFim = $request->get('data_fim', now()->toDateString());
 
-        // Query base com filtro de data para consistência em todos os KPIs
+        // Query base para consistência de dados em todos os cálculos
         $queryBase = Solicitacao::whereBetween('created_at', [
             $dataInicio . ' 00:00:00', 
             $dataFim . ' 23:59:59'
         ]);
 
-        // KPIs Principais
+        // KPIs de Eficiência
         $totalChamados = (clone $queryBase)->count();
         $totalResolvidos = (clone $queryBase)->where('status', 'resolvido')->count();
         
-        // Tempo Médio de Resolução (TMR) em horas
+        // Cálculo do TMR (Tempo Médio de Resolução) em horas
         $tmrHoras = (clone $queryBase)->where('status', 'resolvido')
             ->whereNotNull('resolvido_em')
             ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolvido_em)) as avg_tmr')
             ->value('avg_tmr') ?? 0;
 
-        // SLA: Chamados não resolvidos que passaram de 24h
+        // SLA: Chamados pendentes há mais de 24h
         $foraDoSla = (clone $queryBase)->where('status', '!=', 'resolvido')
             ->where('created_at', '<', now()->subDay())
             ->count();
 
-        // Distribuição por Prioridade e Status
+        // Distribuição por Prioridade
         $prioridades = (clone $queryBase)->select('prioridade', DB::raw('count(*) as total'))
             ->groupBy('prioridade')
             ->pluck('total', 'prioridade');
 
+        // Agrupamento por Status
         $statusCounts = (clone $queryBase)->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -55,7 +57,7 @@ class SolicitacaoController extends Controller
             ->groupBy('motivo_contato')
             ->get();
 
-        // Tendência Temporal (Agrupado por Dia)
+        // Tendência Temporal
         $tendenciaSemanal = (clone $queryBase)->selectRaw('DATE(created_at) as data, count(*) as total')
             ->groupBy('data')
             ->orderBy('data')
@@ -76,13 +78,13 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Listagem administrativa com filtros e ordenação por data de abertura.
+     * Listagem administrativa com suporte a filtro de data e ordenação.
      */
     public function index(Request $request)
     {
         $query = Solicitacao::query();
 
-        // Filtro por período de abertura
+        // Filtro condicional por data de abertura
         if ($request->filled('data_inicio') && $request->filled('data_fim')) {
             $query->whereBetween('created_at', [
                 $request->data_inicio . ' 00:00:00',
@@ -90,14 +92,17 @@ class SolicitacaoController extends Controller
             ]);
         }
 
-        // Ordena pelos mais recentes para priorizar novos chamados
+        /**
+         * ORDENAÇÃO: O método latest() ordena por 'created_at' de forma decrescente,
+         * garantindo que os chamados mais novos apareçam primeiro.
+         */
         $chamados = $query->latest()->get();
         
         return view('admin.index', compact('chamados'));
     }
 
     /**
-     * Atualiza o status, resposta técnica e métricas de conclusão.
+     * Atualiza o chamado e registra o timestamp de resolução para métricas.
      */
     public function update(Request $request, Solicitacao $solicitacao)
     {
@@ -113,18 +118,18 @@ class SolicitacaoController extends Controller
             'prioridade' => $validated['prioridade'] ?? $solicitacao->prioridade
         ];
 
-        // Se o status for alterado para resolvido agora, grava a data de conclusão
+        // Lógica de Negócio: Grava a data de resolução apenas na transição para o status 'resolvido'
         if ($validated['status'] === 'resolvido' && $solicitacao->status !== 'resolvido') {
             $dados['resolvido_em'] = now();
         }
 
         $solicitacao->update($dados);
 
-        return back()->with('sucesso', 'Chamado #' . $solicitacao->protocolo . ' atualizado com sucesso!');
+        return back()->with('sucesso', 'Chamado atualizado com sucesso!');
     }
 
     /**
-     * Cria uma nova solicitação com geração automática de protocolo.
+     * Cria a solicitação e processa anexos múltiplos.
      */
     public function store(Request $request)
     {
@@ -138,13 +143,12 @@ class SolicitacaoController extends Controller
             'anexo.*'              => 'nullable|file|mimes:jpg,png,pdf|max:2048', 
         ]);
 
-        // Geração de protocolo único: ANO+MES+DIA-RANDOM
+        // Geração de protocolo único (Ex: 20260120-ABC123)
         $protocolo = date('Ymd') . '-' . strtoupper(Str::random(6));
         $dados['protocolo'] = $protocolo;
-        $dados['status'] = 'novo'; // Status inicial padrão
         $dados['prioridade'] = $request->prioridade ?? 'media';
 
-        // Processamento de múltiplos anexos (salvos como JSON no banco)
+        // Persistência de arquivos no storage público
         if ($request->hasFile('anexo')) {
             $arquivosSalvos = [];
             foreach ($request->file('anexo') as $arquivo) {
@@ -153,17 +157,16 @@ class SolicitacaoController extends Controller
             $dados['arquivo_anexo'] = json_encode($arquivosSalvos); 
         }
 
-        // Remove o campo temporário de arquivo antes de salvar no Model
         unset($dados['anexo']); 
         
         Solicitacao::create($dados);
 
-        return back()->with('sucesso', 'Sua solicitação foi enviada com sucesso!')
+        return back()->with('sucesso', 'Solicitação enviada!')
                      ->with('protocolo', $protocolo);
     }
 
     /**
-     * Busca um chamado pelo protocolo para acompanhamento do cliente.
+     * Consulta pública de protocolo para o cliente.
      */
     public function acompanhar(Request $request)
     {
@@ -175,11 +178,10 @@ class SolicitacaoController extends Controller
     }
 
     /**
-     * Exclusão permanente de um chamado.
+     * Remove o registro e limpa os arquivos físicos associados.
      */
     public function destroy(Solicitacao $solicitacao)
     {
-        // Remove arquivos físicos antes de deletar o registro (Boa prática de limpeza)
         if ($solicitacao->arquivo_anexo) {
             $anexos = json_decode($solicitacao->arquivo_anexo, true);
             if (is_array($anexos)) {
@@ -190,6 +192,6 @@ class SolicitacaoController extends Controller
         }
 
         $solicitacao->delete();
-        return back()->with('sucesso', 'Chamado removido do sistema.');
+        return back()->with('sucesso', 'Chamado excluído permanentemente.');
     }
 }
