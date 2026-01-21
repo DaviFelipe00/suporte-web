@@ -17,21 +17,19 @@
 
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans antialiased">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="sticky top-0 z-50">
         @include('layouts.navigation')
-    </header>
+    </div>
 
     @if (isset($header))
-    <header class="bg-white border-b">
-        <div class="max-w-7xl mx-auto py-6 px-6">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <header class="bg-white border-b shadow-sm relative z-40">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 {{ $header }}
-            </h2>
-        </div>
-    </header>
+            </div>
+        </header>
     @endif
 
-    <main class="flex-grow container mx-auto px-4 sm:px-6 py-10">
+    <main class="flex-grow container mx-auto px-4 sm:px-6 py-8 md:py-10">
         {{ $slot ?? '' }}
         @yield('content')
     </main>
@@ -46,33 +44,35 @@
             </div>
 
             <div>
-                <h4 class="text-white text-xs font-bold mb-4">Plataforma</h4>
+                <h4 class="text-white text-xs font-bold mb-4 uppercase tracking-wider">Plataforma</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="{{ route('home') }}">Nova Solicitação</a></li>
-                    <li><a href="{{ route('protocolo.index') }}">Acompanhar Chamado</a></li>
+                    <li><a href="{{ route('home') }}" class="hover:text-white transition">Nova Solicitação</a></li>
+                    <li><a href="{{ route('protocolo.index') }}" class="hover:text-white transition">Acompanhar Chamado</a></li>
                     @auth
-                        <li><a href="{{ route('admin.index') }}">Controle</a></li>
-                        <li><a href="{{ route('admin.inventario.index') }}">Inventário TI</a></li>
+                        <li><a href="{{ route('admin.index') }}" class="hover:text-white transition">Controle</a></li>
+                        <li><a href="{{ route('admin.inventario.index') }}" class="hover:text-white transition">Inventário TI</a></li>
                     @endauth
                 </ul>
             </div>
 
             <div>
-                <h4 class="text-white text-xs font-bold mb-4">Empresa</h4>
+                <h4 class="text-white text-xs font-bold mb-4 uppercase tracking-wider">Empresa</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#">Política de Privacidade</a></li>
-                    <li><a href="#">Termos de Uso</a></li>
+                    <li><a href="#" class="hover:text-white transition">Política de Privacidade</a></li>
+                    <li><a href="#" class="hover:text-white transition">Termos de Uso</a></li>
                 </ul>
             </div>
 
             <div>
-                <h4 class="text-white text-xs font-bold mb-4">Contato</h4>
-                <p>📧 suporte@simplemind.com.br</p>
-                <p>📞 +55 (81) 98235-0502</p>
+                <h4 class="text-white text-xs font-bold mb-4 uppercase tracking-wider">Contato</h4>
+                <div class="space-y-2 text-sm">
+                    <p class="flex items-center gap-2">📧 suporte@simplemind.com.br</p>
+                    <p class="flex items-center gap-2">📞 +55 (81) 98235-0502</p>
+                </div>
             </div>
         </div>
 
-        <div class="text-center text-xs mt-12">
+        <div class="text-center text-xs mt-12 pt-8 border-t border-gray-800 opacity-50">
             © {{ date('Y') }} Simplemind. Todos os direitos reservados.
         </div>
     </footer>
