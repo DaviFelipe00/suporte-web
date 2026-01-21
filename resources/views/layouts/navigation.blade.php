@@ -1,107 +1,85 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+<nav x-data="{ open: false }" class="bg-white">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="{{ route('home') }}" class="flex items-center gap-2 hover:opacity-80 transition">
+            <img src="{{ asset('images/logo.png') }}" class="h-10" alt="Simplemind">
+        </a>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+        <div class="hidden md:flex items-center gap-3">
+            @auth
+                <a href="{{ route('admin.inventario.index') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium {{ request()->routeIs('admin.inventario.*') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                    Inventário
+                </a>
 
-                    <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
-                        {{ __('Chamados') }}
-                    </x-nav-link>
+                <a href="{{ route('admin.user.create') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium {{ request()->routeIs('admin.user.create') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                    Adicionar usuário
+                </a>
 
-                    <x-nav-link :href="route('admin.inventario.index')" :active="request()->routeIs('admin.inventario.*')">
-                        {{ __('Inventário') }}
-                    </x-nav-link>
-                </div>
-            </div>
+                <a href="{{ route('admin.index') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium {{ request()->routeIs('admin.index') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                    Controle de Chamados
+                </a>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                <a href="{{ route('dashboard') }}"
+                   class="px-5 py-2 rounded-lg border transition font-medium {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 border-blue-600 font-bold' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                    Dashboard
+                </a>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                <form method="POST" action="{{ route('logout') }}" class="ml-2">
+                    @csrf
+                    <button class="px-5 py-2 rounded-lg border transition font-medium bg-white text-red-600 border-red-300 hover:bg-red-50">
+                        Sair
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('protocolo.index') }}" class="px-5 py-2 rounded-lg border transition font-medium bg-white text-gray-600 border-gray-300 hover:bg-gray-50">
+                    Acompanhar Chamado
+                </a>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                <a href="{{ route('home') }}" class="px-5 py-2 rounded-lg border transition font-medium bg-white text-gray-600 border-gray-300 hover:bg-gray-50">
+                    Abrir Chamado
+                </a>
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+                <a href="{{ route('login') }}" class="px-5 py-2 rounded-lg border transition font-medium bg-blue-600 text-white border-blue-600 hover:bg-blue-700">
+                    Painel de Controle
+                </a>
+            @endauth
+        </div>
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+        <div class="flex items-center md:hidden">
+            <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition">
+                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                    <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
-                {{ __('Chamados') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('admin.inventario.index')" :active="request()->routeIs('admin.inventario.*')">
-                {{ __('Inventário') }}
-            </x-responsive-nav-link>
-        </div>
-
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-100 bg-gray-50 pb-4">
+        <div class="pt-2 pb-3 space-y-1 px-4">
+            @auth
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">Chamados</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.inventario.index')" :active="request()->routeIs('admin.inventario.*')">Inventário</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.user.create')" :active="request()->routeIs('admin.user.create')">Novo Usuário</x-responsive-nav-link>
+                
+                <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="px-4 mb-3">
+                        <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
+                        <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="w-full text-left px-4 py-2 text-red-600 font-bold">Sair</button>
+                    </form>
+                </div>
+            @else
+                <x-responsive-nav-link :href="route('home')">Abrir Chamado</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('protocolo.index')">Acompanhar Chamado</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('login')" class="text-blue-600 font-bold">Painel de Controle</x-responsive-nav-link>
+            @endauth
         </div>
     </div>
 </nav>
