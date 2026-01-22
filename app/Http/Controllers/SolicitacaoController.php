@@ -109,7 +109,7 @@ class SolicitacaoController extends Controller
     public function store(Request $request)
     {
         $dados = $request->validate([
-            'nome_solicitante'     => 'required|string|max:255',
+            'nome_solicitante'     => 'nullable|string|max:20',
             'telefone_solicitante' => 'required|string|max:20',
             'email_solicitante'    => 'required|email',
             'motivo_contato'       => 'required|string',
