@@ -76,11 +76,19 @@
                             {{ str_replace('_', ' ', $chamado->status) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="openTicketModal({{ $chamado->id }}, '{{ addslashes($chamado->status) }}', '{{ addslashes($chamado->resposta_admin) }}', '{{ addslashes($chamado->descricao_duvida) }}', '{{ $chamado->arquivo_anexo }}', '{{ $chamado->protocolo }}', '{{ $chamado->created_at->format('d/m/Y H:i') }}')" 
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-4">
+                        <button onclick="openTicketModal({{ $chamado->id }}, '{{ addslashes($chamado->status) }}', '{{ addslashes($chamado->resposta_admin ?? '') }}', '{{ addslashes($chamado->descricao_duvida) }}', '{{ json_encode($chamado->arquivo_anexo) }}', '{{ $chamado->protocolo }}', '{{ $chamado->created_at->format('d/m/Y H:i') }}')" 
                                 class="text-blue-600 hover:text-blue-800 font-black text-xs uppercase tracking-tighter transition-all">
                             Ver Detalhes & Editar
                         </button>
+
+                        <form action="{{ route('admin.chamados.destroy', $chamado->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este chamado permanentemente? Esta ação também removerá os arquivos anexos.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:text-red-700 font-black text-xs uppercase tracking-tighter transition-all">
+                                Excluir
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @empty
