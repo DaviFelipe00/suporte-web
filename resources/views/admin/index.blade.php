@@ -101,6 +101,10 @@
             </tbody>
         </table>
     </div>
+
+    <div class="mt-8 px-2">
+        {{ $chamados->links() }}
+    </div>
 </div>
 
 <div id="ticketModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">

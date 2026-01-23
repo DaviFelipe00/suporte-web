@@ -63,20 +63,23 @@ class SolicitacaoController extends Controller
     /**
      * Listagem administrativa.
      */
-    public function index(Request $request)
-    {
-        $query = Solicitacao::query();
+   public function index(Request $request)
+{
+    $query = Solicitacao::query();
 
-        if ($request->filled('data_inicio') && $request->filled('data_fim')) {
-            $query->whereBetween('created_at', [
-                $request->data_inicio . ' 00:00:00',
-                $request->data_fim . ' 23:59:59'
-            ]);
-        }
-
-        $chamados = $query->latest()->get();
-        return view('admin.index', compact('chamados'));
+    if ($request->filled('data_inicio') && $request->filled('data_fim')) {
+        $query->whereBetween('created_at', [
+            $request->data_inicio . ' 00:00:00',
+            $request->data_fim . ' 23:59:59'
+        ]);
     }
+
+    // Altere de get() para paginate()
+    // O número 10 define quantos chamados aparecem por página
+    $chamados = $query->latest()->paginate(10)->withQueryString();
+
+    return view('admin.index', compact('chamados'));
+}
 
     /**
      * Atualiza o chamado e registra o timestamp de resolução.
