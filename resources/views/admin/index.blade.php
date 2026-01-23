@@ -102,9 +102,58 @@
         </table>
     </div>
 
-    <div class="mt-8 px-2">
-        {{ $chamados->links() }}
-    </div>
+    @if ($chamados->hasPages())
+    <nav class="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4 mt-6 rounded-2xl shadow-sm">
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs text-gray-500 font-medium">
+                    Mostrando <span class="font-bold text-gray-900">{{ $chamados->firstItem() }}</span> até <span class="font-bold text-gray-900">{{ $chamados->lastItem() }}</span> de <span class="font-bold text-gray-900">{{ $chamados->total() }}</span> chamados
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="{{ $chamados->url(1) }}" 
+                   class="px-4 py-2 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-900 transition-all {{ $chamados->onFirstPage() ? 'opacity-50 pointer-events-none' : '' }}">
+                   Início
+                </a>
+
+                <div class="inline-flex rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    @if ($chamados->onFirstPage())
+                        <span class="px-4 py-2 bg-gray-50 text-gray-300 text-[10px] font-black uppercase border-r border-gray-100 cursor-default">Anterior</span>
+                    @else
+                        <a href="{{ $chamados->previousPageUrl() }}" class="px-4 py-2 bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-[10px] font-black uppercase border-r border-gray-100 transition-all">Anterior</a>
+                    @endif
+
+                    <span class="px-6 py-2 bg-blue-600 text-white text-[10px] font-black uppercase z-10 flex items-center">
+                        Página {{ $chamados->currentPage() }}
+                    </span>
+
+                    @if ($chamados->hasMorePages())
+                        <a href="{{ $chamados->nextPageUrl() }}" class="px-4 py-2 bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-[10px] font-black uppercase border-l border-gray-100 transition-all">Próximo</a>
+                    @else
+                        <span class="px-4 py-2 bg-gray-50 text-gray-300 text-[10px] font-black uppercase border-l border-gray-100 cursor-default">Próximo</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex flex-1 justify-between sm:hidden">
+            @if ($chamados->onFirstPage())
+                <span class="px-4 py-2 text-gray-300 text-[10px] font-black uppercase">Anterior</span>
+            @else
+                <a href="{{ $chamados->previousPageUrl() }}" class="px-4 py-2 text-blue-600 text-[10px] font-black uppercase">Anterior</a>
+            @endif
+
+            <span class="text-[10px] font-black uppercase text-gray-900 flex items-center">Pág {{ $chamados->currentPage() }}</span>
+
+            @if ($chamados->hasMorePages())
+                <a href="{{ $chamados->nextPageUrl() }}" class="px-4 py-2 text-blue-600 text-[10px] font-black uppercase">Próximo</a>
+            @else
+                <span class="px-4 py-2 text-gray-300 text-[10px] font-black uppercase">Próximo</span>
+            @endif
+        </div>
+    </nav>
+    @endif
 </div>
 
 <div id="ticketModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
